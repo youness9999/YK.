@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My purchase</title>
+    <link rel='stylesheet' href="shop.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo"><i class="fas fa-microchip"></i> YK Tech Shop</div>
+            <div class="nav-right">
+                <span id="welcomeUser" class="nav-user"></span>
+                <button id="backBtn" class="btn-logout" style="background: var(--primary);" onclick="window.location.href='page.html'"><i class="fas fa-arrow-left"></i> Back to Shop</button>
+                <button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+    </nav>
+    <main class="shop-container">
+        <header id="orderEmptyState" class="empty-state" style="display: none;" >
+            <h1>You haven't any purchases.</h1>
+            <p>make your purchase request first.</p>
+        </header>
+
+        <div class="products-grid" id="productsGrid">
+            <!-- Products injected by JS -->
+        </div>
+    </main>
+    <script src="purch.js" ></script>
+</body>
+</html>
