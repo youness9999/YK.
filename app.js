@@ -60,7 +60,7 @@ togglePasswordBtn.addEventListener('click', () => togglePasswordVisibility(passw
 toggleSignupPasswordBtn.addEventListener('click', () => togglePasswordVisibility(signupPasswordInput, toggleSignupPasswordBtn));
 
 // Sign Up Submission Logic
-signupForm.addEventListener('submit', (event) => {
+signupForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     signupStatusMessage.className = 'message';
     
@@ -74,23 +74,26 @@ signupForm.addEventListener('submit', (event) => {
 
     setLoadingState(signupBtn, true, 'Signing Up');
 
-    setTimeout(() => {
-        setLoadingState(signupBtn, false, 'Sign Up', 'fa-user-plus');
-
-        // Fetch existing users from local storage
-        const usersJSON = localStorage.getItem('usersDB') || '[]';
-        const users = JSON.parse(usersJSON);
+    try {
+        // Fetch existing users from API
+        const response = await fetch('http://localhost:3000/api/users');
+        const users = await response.json();
 
         // Check if username already exists
         const userExists = users.some(u => u.username.toLowerCase() === newUsername.toLowerCase());
         
         if (userExists) {
+            setLoadingState(signupBtn, false, 'Sign Up', 'fa-user-plus');
             showMsg(signupStatusMessage, 'error', 'Username already exists!');
         } else {
-            // Save new user
-            users.push({ username: newUsername, password: newPassword });
-            localStorage.setItem('usersDB', JSON.stringify(users));
+            // Save new user via API
+            await fetch('http://localhost:3000/api/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: newUsername, password: newPassword })
+            });
             
+            setLoadingState(signupBtn, false, 'Sign Up', 'fa-user-plus');
             showMsg(signupStatusMessage, 'success', 'Account created! Redirecting to login...');
             
             // Switch back to login after short delay
@@ -99,11 +102,14 @@ signupForm.addEventListener('submit', (event) => {
                 usernameInput.value = newUsername; // Prefill the username for them
             }, 1000);
         }
-    }, 1000);
+    } catch (error) {
+        setLoadingState(signupBtn, false, 'Sign Up', 'fa-user-plus');
+        showMsg(signupStatusMessage, 'error', 'Database connection error.');
+    }
 });
 
 // Login Submission Logic
-loginForm.addEventListener('submit', (event) => {
+loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     statusMessage.className = 'message';
 
@@ -117,40 +123,42 @@ loginForm.addEventListener('submit', (event) => {
 
     setLoadingState(loginBtn, true, 'Authenticating');
 
-    setTimeout(() => {
-        setLoadingState(loginBtn, false, 'Sign In', 'fa-arrow-right');
+    try {
+        // Fetch registered users from API
+        const response = await fetch('http://localhost:3000/api/users');
+        const users = await response.json();
 
-        // Fetch registered users
-        const usersJSON = localStorage.getItem('usersDB') || '[]';
-        const users = JSON.parse(usersJSON);
-
-        // Check credentials against LocalStorage database
+        // Check credentials against database
         const validUser = users.find(u => u.username.toLowerCase() === usernameValue.toLowerCase() && u.password === passwordValue);
 
-        // Accept 'admin' default or checking local DB
+        setLoadingState(loginBtn, false, 'Sign In', 'fa-arrow-right');
+
+        // Accept 'admin' default or checking DB
         if ((usernameValue.toLowerCase() === 'admin' && passwordValue === 'password') || validUser) {
             
             const detectedUser = validUser ? validUser.username : 'admin';
 
-            // --- التعديل الجديد: حفظ اسم المستخدم في الذاكرة عند النجاح ---
+            // Save for local persistence of auth
             localStorage.setItem('rememberedUser', detectedUser);
-            // -------------------------------------------------------
-            
-            // Set session authorization flag
             localStorage.setItem('loggedInUser', detectedUser.toLowerCase());
 
             showMsg(statusMessage, 'success', 'Login successful! Redirecting...');
             
-            // Redirect logic based on role
-            if (detectedUser.toLowerCase() === 'admin') {
-                 window.location.href = 'admin.html'; 
-            } else {
-                 window.location.href = 'page.html'; 
-            }
+            setTimeout(() => {
+                // Redirect logic based on role
+                if (detectedUser.toLowerCase() === 'admin') {
+                     window.location.href = 'admin.html'; 
+                } else {
+                     window.location.href = 'page.html'; 
+                }
+            }, 500);
         } else {
             showMsg(statusMessage, 'error', 'Invalid username or password.');
         }
-    }, 1500);
+    } catch (error) {
+        setLoadingState(loginBtn, false, 'Sign In', 'fa-arrow-right');
+        showMsg(statusMessage, 'error', 'Database connection error.');
+    }
 });
 
 // Helper function to handle UI loading state

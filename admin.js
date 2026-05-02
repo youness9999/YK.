@@ -21,18 +21,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function loadUsers() {
+async function loadUsers() {
     const tableBody = document.getElementById('usersTableBody');
     const emptyState = document.getElementById('emptyState');
     const tableResponsive = document.querySelector('.table-responsive');
     const userCount = document.getElementById('userCount');
 
-    // Fetch from LocalStorage
-    const usersJSON = localStorage.getItem('usersDB');
+    // Fetch from API
     let users = [];
-    
-    if (usersJSON) {
-        users = JSON.parse(usersJSON);
+    try {
+        const response = await fetch('http://localhost:3000/api/users');
+        users = await response.json();
+    } catch (e) {
+        console.error('Error fetching users:', e);
     }
 
     // Update count badge
@@ -67,14 +68,15 @@ function loadUsers() {
 }
 
 // Gives admin the ability to remove users
-function deleteUser(index) {
+window.deleteUser = async function(index) {
     if(confirm('Are you sure you want to delete this user?')) {
-        const usersJSON = localStorage.getItem('usersDB');
-        if (usersJSON) {
-            let users = JSON.parse(usersJSON);
-            users.splice(index, 1); // Remove from array
-            localStorage.setItem('usersDB', JSON.stringify(users)); // Save new array
+        try {
+            await fetch(`http://localhost:3000/api/users/${index}`, {
+                method: 'DELETE'
+            });
             loadUsers(); // Refresh table view immediately
+        } catch (e) {
+            alert('Failed to delete user.');
         }
     }
 }
@@ -94,18 +96,19 @@ function escapeHTML(str) {
 }
 
 // ---------------- ORDERS LOGIC ----------------
-function loadOrders() {
+async function loadOrders() {
     const tableBody = document.getElementById('ordersTableBody');
     const emptyState = document.getElementById('orderEmptyState');
     const tableResponsive = document.querySelectorAll('.table-responsive')[1]; // second table
     const orderCount = document.getElementById('orderCount');
 
-    // Fetch from LocalStorage
-    const ordersJSON = localStorage.getItem('ordersDB');
+    // Fetch from API
     let orders = [];
-    
-    if (ordersJSON) {
-        orders = JSON.parse(ordersJSON);
+    try {
+        const response = await fetch('http://localhost:3000/api/orders');
+        orders = await response.json();
+    } catch (e) {
+        console.error('Error fetching orders:', e);
     }
 
     // Update count badge
@@ -165,32 +168,36 @@ function loadOrders() {
     });
 }
 
-function approveOrder(index) {
+window.approveOrder = async function(index) {
     if(confirm('Approve this purchase request?')) {
-        const ordersJSON = localStorage.getItem('ordersDB');
-        if (ordersJSON) {
-            let orders = JSON.parse(ordersJSON);
-            orders[index].status = 'Approved';
-            localStorage.setItem('ordersDB', JSON.stringify(orders));
+        try {
+            await fetch(`http://localhost:3000/api/orders/${index}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'Approved' })
+            });
             loadOrders(); // Refresh table view
+        } catch (e) {
+            alert('Failed to approve order.');
         }
     }
 }
 
-function deleteOrder(index) {
+window.deleteOrder = async function(index) {
     if(confirm('Are you sure you want to delete this order request?')) {
-        const ordersJSON = localStorage.getItem('ordersDB');
-        if (ordersJSON) {
-            let orders = JSON.parse(ordersJSON);
-            orders.splice(index, 1); 
-            localStorage.setItem('ordersDB', JSON.stringify(orders));
+        try {
+            await fetch(`http://localhost:3000/api/orders/${index}`, {
+                method: 'DELETE'
+            });
             loadOrders(); // Refresh table view
+        } catch (e) {
+            alert('Failed to delete order.');
         }
     }
 }
 
 // ---------------- PRODUCTS LOGIC ----------------
-document.getElementById('addProductForm').addEventListener('submit', (e) => {
+document.getElementById('addProductForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const name = document.getElementById('prodName').value;
@@ -212,42 +219,52 @@ document.getElementById('addProductForm').addEventListener('submit', (e) => {
     };
     const icon = iconMap[type] || 'fa-box';
 
-    // Get products from DB
-    let productsJSON = localStorage.getItem('productsDB');
-    let products = productsJSON ? JSON.parse(productsJSON) : [];
-    
-    // If shop hasn't been visited yet, DB might be empty. We should ideally have the default list.
-    // Assuming shop.js initializes it, but if admin adds first:
-    let maxId = 0;
-    products.forEach(p => { if(p.id > maxId) maxId = p.id; });
-    if(maxId === 0) maxId = 50; // Just in case, to avoid collision with defaults
-    
-    const newProduct = {
-        id: maxId + 1,
-        name, 
-        type, 
-        price, 
-        icon, 
-        img, 
-        desc
-    };
-    
-    products.push(newProduct);
-    localStorage.setItem('productsDB', JSON.stringify(products));
-    
-    loadManageProducts(); // Refresh the table
-    
-    alert(`Success! "${name}" has been added to the shop.`);
-    e.target.reset(); // clear form
+    try {
+        const response = await fetch('http://localhost:3000/api/products');
+        let products = await response.json();
+        
+        let maxId = 0;
+        products.forEach(p => { if(p.id > maxId) maxId = p.id; });
+        if(maxId === 0) maxId = 50; 
+        
+        const newProduct = {
+            id: maxId + 1,
+            name, 
+            type, 
+            price, 
+            icon, 
+            img, 
+            desc,
+            inStock: true
+        };
+        
+        await fetch('http://localhost:3000/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newProduct)
+        });
+        
+        loadManageProducts(); // Refresh the table
+        
+        alert(`Success! "${name}" has been added to the shop.`);
+        e.target.reset(); // clear form
+    } catch (error) {
+        alert('Failed to connect to database.');
+    }
 });
 
 // ---------------- MANAGE PRODUCTS TABLE LOGIC ----------------
-function loadManageProducts() {
+async function loadManageProducts() {
     const tableBody = document.getElementById('productsTableBody');
     const productCount = document.getElementById('productCount');
 
-    let productsJSON = localStorage.getItem('productsDB');
-    let products = productsJSON ? JSON.parse(productsJSON) : [];
+    let products = [];
+    try {
+        const response = await fetch('http://localhost:3000/api/products');
+        products = await response.json();
+    } catch (e) {
+        console.error('Failed to load products.');
+    }
 
     if (productCount) {
         productCount.textContent = `${products.length} Product${products.length !== 1 ? 's' : ''}`;
@@ -282,27 +299,37 @@ function loadManageProducts() {
     }
 }
 
-function deleteShopProduct(id) {
+window.deleteShopProduct = async function(id) {
     if(confirm('Are you sure you want to permanently delete this product from the shop?')) {
-        let productsJSON = localStorage.getItem('productsDB');
-        if (productsJSON) {
-            let products = JSON.parse(productsJSON);
-            products = products.filter(p => p.id !== id);
-            localStorage.setItem('productsDB', JSON.stringify(products));
+        try {
+            await fetch(`http://localhost:3000/api/products/${id}`, {
+                method: 'DELETE'
+            });
             loadManageProducts();
+        } catch (error) {
+            alert('Failed to connect to database.');
         }
     }
 }
 
-function toggleStock(id) {
-    let productsJSON = localStorage.getItem('productsDB');
-    if (productsJSON) {
-        let products = JSON.parse(productsJSON);
+window.toggleStock = async function(id) {
+    try {
+        // Fetch current product state
+        const response = await fetch('http://localhost:3000/api/products');
+        const products = await response.json();
+        
         let product = products.find(p => p.id === id);
         if (product) {
-            product.inStock = (product.inStock === false) ? true : false;
-            localStorage.setItem('productsDB', JSON.stringify(products));
+            const newStockState = (product.inStock === false) ? true : false;
+            
+            await fetch(`http://localhost:3000/api/products/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ inStock: newStockState })
+            });
             loadManageProducts();
         }
+    } catch (error) {
+        alert('Failed to connect to database.');
     }
 }
