@@ -22,19 +22,20 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMyOrders();
 });
 
-function loadMyOrders() {
+async function loadMyOrders() {
     const loggedInUser = localStorage.getItem('loggedInUser');
     const emptyState = document.getElementById('orderEmptyState');
     const grid = document.getElementById('productsGrid');
     
     grid.innerHTML = '';
     
-    // Get orders from LocalStorage
-    const ordersJSON = localStorage.getItem('ordersDB') || '[]';
-    const allOrders = JSON.parse(ordersJSON);
-    
-    // Filter orders for current user and hide cancelled ones
-    const userOrders = allOrders.filter(order => order.user === loggedInUser && order.status !== 'Cancelled');
+    try {
+        // Get orders from Firebase
+        const snapshot = await db.collection('orders').get();
+        const allOrders = snapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
+        
+        // Filter orders for current user and hide cancelled ones
+        const userOrders = allOrders.filter(order => order.user === loggedInUser && order.status !== 'Cancelled');
     
     if (userOrders.length === 0) {
         emptyState.style.display = 'block';
@@ -92,19 +93,25 @@ function loadMyOrders() {
             grid.appendChild(card);
         });
     }
+    } catch (error) {
+        emptyState.style.display = 'block';
+        emptyState.innerHTML = '<p style="color: var(--danger);">Failed to load orders. Make sure the Node.js server is running.</p>';
+    }
 }
 
-window.cancelOrder = function(orderId) {
+window.cancelOrder = async function(orderId) {
     if(confirm('Are you sure you want to cancel this pending order request?')) {
-        const ordersJSON = localStorage.getItem('ordersDB');
-        if (ordersJSON) {
-            let orders = JSON.parse(ordersJSON);
+        try {
+            const snapshot = await db.collection('orders').get();
+            const orders = snapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
+            
             const orderToCancel = orders.find(o => o.id === orderId);
             if (orderToCancel) {
-                orderToCancel.status = 'Cancelled';
-                localStorage.setItem('ordersDB', JSON.stringify(orders));
+                await db.collection('orders').doc(orderToCancel.firebaseId).update({ status: 'Cancelled' });
                 loadMyOrders(); // Re-render the orders grid instantly
             }
+        } catch (error) {
+            alert('Failed to connect to Firebase database.');
         }
     }
 };

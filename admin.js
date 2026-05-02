@@ -21,18 +21,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function loadUsers() {
+async function loadUsers() {
     const tableBody = document.getElementById('usersTableBody');
     const emptyState = document.getElementById('emptyState');
     const tableResponsive = document.querySelector('.table-responsive');
     const userCount = document.getElementById('userCount');
 
-    // Fetch from LocalStorage
-    const usersJSON = localStorage.getItem('usersDB');
+    // Fetch from Firebase
     let users = [];
-    
-    if (usersJSON) {
-        users = JSON.parse(usersJSON);
+    try {
+        const snapshot = await db.collection('users').get();
+        users = snapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
+    } catch (e) {
+        console.error('Error fetching users:', e);
     }
 
     // Update count badge
@@ -57,7 +58,7 @@ function loadUsers() {
             <td><strong>${escapeHTML(user.username)}</strong></td>
             <td><span class="password-cell">${escapeHTML(user.password)}</span></td>
             <td>
-                <button class="action-btn" onclick="deleteUser(${index})" title="Delete User">
+                <button class="action-btn" onclick="deleteUser('${user.firebaseId}')" title="Delete User">
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
@@ -67,14 +68,13 @@ function loadUsers() {
 }
 
 // Gives admin the ability to remove users
-function deleteUser(index) {
+window.deleteUser = async function(firebaseId) {
     if(confirm('Are you sure you want to delete this user?')) {
-        const usersJSON = localStorage.getItem('usersDB');
-        if (usersJSON) {
-            let users = JSON.parse(usersJSON);
-            users.splice(index, 1); // Remove from array
-            localStorage.setItem('usersDB', JSON.stringify(users)); // Save new array
+        try {
+            await db.collection('users').doc(firebaseId).delete();
             loadUsers(); // Refresh table view immediately
+        } catch (e) {
+            alert('Failed to delete user.');
         }
     }
 }
@@ -94,18 +94,19 @@ function escapeHTML(str) {
 }
 
 // ---------------- ORDERS LOGIC ----------------
-function loadOrders() {
+async function loadOrders() {
     const tableBody = document.getElementById('ordersTableBody');
     const emptyState = document.getElementById('orderEmptyState');
     const tableResponsive = document.querySelectorAll('.table-responsive')[1]; // second table
     const orderCount = document.getElementById('orderCount');
 
-    // Fetch from LocalStorage
-    const ordersJSON = localStorage.getItem('ordersDB');
+    // Fetch from Firebase
     let orders = [];
-    
-    if (ordersJSON) {
-        orders = JSON.parse(ordersJSON);
+    try {
+        const snapshot = await db.collection('orders').get();
+        orders = snapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
+    } catch (e) {
+        console.error('Error fetching orders:', e);
     }
 
     // Update count badge
@@ -134,14 +135,14 @@ function loadOrders() {
         let actionButtons = '';
         if (order.status === 'Pending') {
             actionButtons += `
-                <button class="btn-approve" onclick="approveOrder(${index})" title="Approve Request">
+                <button class="btn-approve" onclick="approveOrder('${order.firebaseId}')" title="Approve Request">
                     <i class="fas fa-check"></i> Approve
                 </button>
             `;
         }
         
         actionButtons += `
-            <button class="action-btn" onclick="deleteOrder(${index})" title="Delete Order">
+            <button class="action-btn" onclick="deleteOrder('${order.firebaseId}')" title="Delete Order">
                 <i class="fas fa-trash"></i>
             </button>
         `;
@@ -165,32 +166,30 @@ function loadOrders() {
     });
 }
 
-function approveOrder(index) {
+window.approveOrder = async function(firebaseId) {
     if(confirm('Approve this purchase request?')) {
-        const ordersJSON = localStorage.getItem('ordersDB');
-        if (ordersJSON) {
-            let orders = JSON.parse(ordersJSON);
-            orders[index].status = 'Approved';
-            localStorage.setItem('ordersDB', JSON.stringify(orders));
+        try {
+            await db.collection('orders').doc(firebaseId).update({ status: 'Approved' });
             loadOrders(); // Refresh table view
+        } catch (e) {
+            alert('Failed to approve order.');
         }
     }
 }
 
-function deleteOrder(index) {
+window.deleteOrder = async function(firebaseId) {
     if(confirm('Are you sure you want to delete this order request?')) {
-        const ordersJSON = localStorage.getItem('ordersDB');
-        if (ordersJSON) {
-            let orders = JSON.parse(ordersJSON);
-            orders.splice(index, 1); 
-            localStorage.setItem('ordersDB', JSON.stringify(orders));
+        try {
+            await db.collection('orders').doc(firebaseId).delete();
             loadOrders(); // Refresh table view
+        } catch (e) {
+            alert('Failed to delete order.');
         }
     }
 }
 
 // ---------------- PRODUCTS LOGIC ----------------
-document.getElementById('addProductForm').addEventListener('submit', (e) => {
+document.getElementById('addProductForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const name = document.getElementById('prodName').value;
@@ -212,42 +211,48 @@ document.getElementById('addProductForm').addEventListener('submit', (e) => {
     };
     const icon = iconMap[type] || 'fa-box';
 
-    // Get products from DB
-    let productsJSON = localStorage.getItem('productsDB');
-    let products = productsJSON ? JSON.parse(productsJSON) : [];
-    
-    // If shop hasn't been visited yet, DB might be empty. We should ideally have the default list.
-    // Assuming shop.js initializes it, but if admin adds first:
-    let maxId = 0;
-    products.forEach(p => { if(p.id > maxId) maxId = p.id; });
-    if(maxId === 0) maxId = 50; // Just in case, to avoid collision with defaults
-    
-    const newProduct = {
-        id: maxId + 1,
-        name, 
-        type, 
-        price, 
-        icon, 
-        img, 
-        desc
-    };
-    
-    products.push(newProduct);
-    localStorage.setItem('productsDB', JSON.stringify(products));
-    
-    loadManageProducts(); // Refresh the table
-    
-    alert(`Success! "${name}" has been added to the shop.`);
-    e.target.reset(); // clear form
+    try {
+        const snapshot = await db.collection('products').get();
+        let products = snapshot.docs.map(doc => doc.data());
+        
+        let maxId = 0;
+        products.forEach(p => { if(p.id > maxId) maxId = p.id; });
+        if(maxId === 0) maxId = 50; 
+        
+        const newProduct = {
+            id: maxId + 1,
+            name, 
+            type, 
+            price, 
+            icon, 
+            img, 
+            desc,
+            inStock: true
+        };
+        
+        await db.collection('products').add(newProduct);
+        
+        loadManageProducts(); // Refresh the table
+        
+        alert(`Success! "${name}" has been added to the shop.`);
+        e.target.reset(); // clear form
+    } catch (error) {
+        alert('Failed to connect to Firebase database.');
+    }
 });
 
 // ---------------- MANAGE PRODUCTS TABLE LOGIC ----------------
-function loadManageProducts() {
+async function loadManageProducts() {
     const tableBody = document.getElementById('productsTableBody');
     const productCount = document.getElementById('productCount');
 
-    let productsJSON = localStorage.getItem('productsDB');
-    let products = productsJSON ? JSON.parse(productsJSON) : [];
+    let products = [];
+    try {
+        const snapshot = await db.collection('products').get();
+        products = snapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
+    } catch (e) {
+        console.error('Failed to load products.');
+    }
 
     if (productCount) {
         productCount.textContent = `${products.length} Product${products.length !== 1 ? 's' : ''}`;
@@ -269,10 +274,10 @@ function loadManageProducts() {
                 <td>${p.price} TND</td>
                 <td>${stockBadge}</td>
                 <td>
-                    <button class="btn-logout" style="padding: 6px 10px; font-size: 12px; display: inline-block; margin-right: 8px;" onclick="toggleStock(${p.id})" title="Toggle Stock">
+                    <button class="btn-logout" style="padding: 6px 10px; font-size: 12px; display: inline-block; margin-right: 8px;" onclick="toggleStock('${p.firebaseId}')" title="Toggle Stock">
                         ${toggleBtnText}
                     </button>
-                    <button class="action-btn" onclick="deleteShopProduct(${p.id})" title="Delete Product">
+                    <button class="action-btn" onclick="deleteShopProduct('${p.firebaseId}')" title="Delete Product">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -282,27 +287,31 @@ function loadManageProducts() {
     }
 }
 
-function deleteShopProduct(id) {
+window.deleteShopProduct = async function(firebaseId) {
     if(confirm('Are you sure you want to permanently delete this product from the shop?')) {
-        let productsJSON = localStorage.getItem('productsDB');
-        if (productsJSON) {
-            let products = JSON.parse(productsJSON);
-            products = products.filter(p => p.id !== id);
-            localStorage.setItem('productsDB', JSON.stringify(products));
+        try {
+            await db.collection('products').doc(firebaseId).delete();
             loadManageProducts();
+        } catch (error) {
+            alert('Failed to connect to Firebase database.');
         }
     }
 }
 
-function toggleStock(id) {
-    let productsJSON = localStorage.getItem('productsDB');
-    if (productsJSON) {
-        let products = JSON.parse(productsJSON);
-        let product = products.find(p => p.id === id);
-        if (product) {
-            product.inStock = (product.inStock === false) ? true : false;
-            localStorage.setItem('productsDB', JSON.stringify(products));
+window.toggleStock = async function(firebaseId) {
+    try {
+        // Fetch current product state
+        const docRef = db.collection('products').doc(firebaseId);
+        const docSnap = await docRef.get();
+        
+        if (docSnap.exists) {
+            const product = docSnap.data();
+            const newStockState = (product.inStock === false) ? true : false;
+            
+            await docRef.update({ inStock: newStockState });
             loadManageProducts();
         }
+    } catch (error) {
+        alert('Failed to connect to Firebase database.');
     }
 }
