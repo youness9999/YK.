@@ -75,12 +75,9 @@ signupForm.addEventListener('submit', async (event) => {
     setLoadingState(signupBtn, true, 'Signing Up');
 
     try {
-        // Fetch existing users from Firebase
-        const snapshot = await db.collection('users').get();
-        const users = snapshot.docs.map(doc => doc.data());
-
-        // Check if username already exists
-        const userExists = users.some(u => u.username.toLowerCase() === newUsername.toLowerCase());
+        // Check if username already exists using a query (more efficient)
+        const snapshot = await db.collection('users').where('username', '==', newUsername).get();
+        const userExists = !snapshot.empty;
         
         if (userExists) {
             setLoadingState(signupBtn, false, 'Sign Up', 'fa-user-plus');
@@ -99,8 +96,9 @@ signupForm.addEventListener('submit', async (event) => {
             }, 1000);
         }
     } catch (error) {
+        console.error("Firebase Signup Error:", error);
         setLoadingState(signupBtn, false, 'Sign Up', 'fa-user-plus');
-        showMsg(signupStatusMessage, 'error', 'Database connection error.');
+        showMsg(signupStatusMessage, 'error', error.message || 'Database connection error.');
     }
 });
 
@@ -120,12 +118,17 @@ loginForm.addEventListener('submit', async (event) => {
     setLoadingState(loginBtn, true, 'Authenticating');
 
     try {
-        // Fetch registered users from Firebase
-        const snapshot = await db.collection('users').get();
-        const users = snapshot.docs.map(doc => doc.data());
-
-        // Check credentials against database
-        const validUser = users.find(u => u.username.toLowerCase() === usernameValue.toLowerCase() && u.password === passwordValue);
+        // Fetch registered users from Firebase matching the username
+        const snapshot = await db.collection('users').where('username', '==', usernameValue).get();
+        
+        let validUser = null;
+        if (!snapshot.empty) {
+            const userDoc = snapshot.docs[0].data();
+            // Check if password matches
+            if (userDoc.password === passwordValue) {
+                validUser = userDoc;
+            }
+        }
 
         setLoadingState(loginBtn, false, 'Sign In', 'fa-arrow-right');
 
@@ -152,8 +155,9 @@ loginForm.addEventListener('submit', async (event) => {
             showMsg(statusMessage, 'error', 'Invalid username or password.');
         }
     } catch (error) {
+        console.error("Firebase Login Error:", error);
         setLoadingState(loginBtn, false, 'Sign In', 'fa-arrow-right');
-        showMsg(statusMessage, 'error', 'Database connection error.');
+        showMsg(statusMessage, 'error', error.message || 'Database connection error.');
     }
 });
 
