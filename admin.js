@@ -122,8 +122,19 @@ async function loadOrders() {
     emptyState.style.display = 'none';
     tableBody.innerHTML = '';
 
+    let totalRevenue = 0;
+    let approvedCount = 0;
+    let pendingCount = 0;
+
     // Populate rows
     orders.forEach((order, index) => {
+        if (order.status === 'Approved') {
+            totalRevenue += parseFloat(order.price || 0);
+            approvedCount++;
+        } else if (order.status === 'Pending') {
+            pendingCount++;
+        }
+        
         const row = document.createElement('tr');
         
         // Determine badge style
@@ -164,6 +175,11 @@ async function loadOrders() {
         `;
         tableBody.appendChild(row);
     });
+    
+    // Update Analytics UI
+    document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString() + ' TND';
+    document.getElementById('approvedOrdersCount').textContent = approvedCount;
+    document.getElementById('pendingOrdersCount').textContent = pendingCount;
 }
 
 window.approveOrder = async function(firebaseId) {

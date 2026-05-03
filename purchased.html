@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My purchase</title>
+    <title>My Profile</title>
     <link rel='stylesheet' href="shop.css">
 </head>
 <body>
@@ -18,9 +18,21 @@
         </div>
     </nav>
     <main class="shop-container">
-        <header id="orderEmptyState" class="empty-state" style="display: none;" >
-            <h1>You haven't any purchases.</h1>
-            <p>make your purchase request first.</p>
+        <header class="shop-header" style="margin-bottom: 40px; text-align: left; display: flex; align-items: center; gap: 20px; background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--border-color);">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: white;" id="profileAvatar">
+                U
+            </div>
+            <div>
+                <h1 id="profileName" style="margin-bottom: 5px; font-size: 28px;">User Profile</h1>
+                <p style="color: var(--text-muted);">Manage your account and view your order history.</p>
+            </div>
+        </header>
+
+        <h2 style="margin-bottom: 20px; font-size: 22px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Order History</h2>
+
+        <header id="orderEmptyState" class="empty-state" style="display: none; text-align: center; padding: 40px;" >
+            <h2>You haven't made any purchases yet.</h2>
+            <p style="color: var(--text-muted); margin-top: 10px;">Head back to the shop to make your first purchase!</p>
         </header>
 
         <div class="products-grid" id="productsGrid">

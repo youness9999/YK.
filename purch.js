@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
         welcomeUserEl.innerHTML = `Hello, <strong>${loggedInUser}</strong>`;
     }
     
+    document.getElementById('profileName').textContent = loggedInUser;
+    document.getElementById('profileAvatar').textContent = loggedInUser.charAt(0).toUpperCase();
+    
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
