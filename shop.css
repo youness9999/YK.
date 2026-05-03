@@ -307,7 +307,7 @@ body {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    background: rgba(16, 185, 129, 0.9);
+    background: rgba(16, 185, 129, 0.9); /* Default success */
     backdrop-filter: blur(8px);
     color: white;
     padding: 16px 24px;
@@ -319,6 +319,10 @@ body {
     transition: all 0.3s ease;
     z-index: 1000;
 }
+
+.toast.success { background: rgba(16, 185, 129, 0.9); }
+.toast.error { background: rgba(239, 68, 68, 0.9); }
+.toast.info { background: rgba(59, 130, 246, 0.9); }
 
 .toast.show {
     transform: translateY(0);
@@ -428,4 +432,31 @@ body {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Light Mode Variables */
+body.light-mode {
+    --bg-color: #f8fafc;
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --text-color: #0f172a;
+    --text-muted: #64748b;
+    --border-color: rgba(0, 0, 0, 0.1);
+    background-image: none;
+}
+body.light-mode .navbar {
+    background: rgba(255, 255, 255, 0.9);
+}
+body.light-mode .btn-logout, body.light-mode .btn-filter {
+    color: var(--text-color);
+}
+body.light-mode .form-group input, body.light-mode .form-group textarea, body.light-mode .form-group select, body.light-mode .price-select {
+    background: #ffffff;
+    color: var(--text-color);
+}
+body.light-mode .price-select option {
+    background: #ffffff;
+    color: var(--text-color);
+}
+body.light-mode .nav-user {
+    color: var(--text-color);
 }
