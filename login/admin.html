@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <header class="admin-header">
+            <div class="header-content">
+                <h1><i class="fas fa-user-shield"></i> Admin Dashboard</h1>
+                <button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+            <p>Welcome back, Admin. Here is the registered users database.</p>
+        </header>
+
+        <main class="admin-main">
+            <!-- ANALYTICS SECTION -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+                <div class="table-card" style="text-align: center; padding: 20px;">
+                    <i class="fas fa-money-bill-wave" style="font-size: 30px; color: var(--success); margin-bottom: 10px;"></i>
+                    <h3 style="color: var(--text-muted); font-size: 14px;">Total Revenue</h3>
+                    <div id="totalRevenue" style="font-size: 28px; font-weight: bold; margin-top: 10px;">0 TND</div>
+                </div>
+                <div class="table-card" style="text-align: center; padding: 20px;">
+                    <i class="fas fa-shopping-cart" style="font-size: 30px; color: var(--primary); margin-bottom: 10px;"></i>
+                    <h3 style="color: var(--text-muted); font-size: 14px;">Approved Orders</h3>
+                    <div id="approvedOrdersCount" style="font-size: 28px; font-weight: bold; margin-top: 10px;">0</div>
+                </div>
+                <div class="table-card" style="text-align: center; padding: 20px;">
+                    <i class="fas fa-box" style="font-size: 30px; color: #f59e0b; margin-bottom: 10px;"></i>
+                    <h3 style="color: var(--text-muted); font-size: 14px;">Pending Orders</h3>
+                    <div id="pendingOrdersCount" style="font-size: 28px; font-weight: bold; margin-top: 10px;">0</div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>Registered Users</h2>
+                    <span id="userCount" class="badge">0 Users</span>
+                </div>
+                <div class="table-responsive">
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Username</th>
+                                <th>Password</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Users will be injected here via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-users-slash"></i>
+                    <p>No users registered yet.</p>
+                </div>
+            </div>
+
+            <!-- PURCHASE REQUESTS / ORDERS SECTION -->
+            <div class="table-card" style="margin-top: 40px;">
+                <div class="table-header">
+                    <h2>Purchase Requests</h2>
+                    <span id="orderCount" class="badge">0 Orders</span>
+                </div>
+                <div class="table-responsive">
+                    <table id="ordersTable">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Buyer</th>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <!-- Orders will be injected here via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="orderEmptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-box-open"></i>
+                    <p>No purchase requests yet.</p>
+                </div>
+            </div>
+
+            <!-- MANAGE PRODUCTS SECTION -->
+            <div class="table-card" style="margin-top: 40px;">
+                <div class="table-header">
+                    <h2>Manage Products</h2>
+                    <span id="productCount" class="badge">0 Products</span>
+                </div>
+                <div class="table-responsive">
+                    <table id="productsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Stock Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <!-- Products will be injected here via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ADD PRODUCT SECTION -->
+            <div class="table-card" style="margin-top: 40px; padding-bottom: 20px;">
+                <div class="table-header">
+                    <h2><i class="fas fa-plus-circle"></i> Add New Product</h2>
+                </div>
+                <div class="form-container" style="padding: 20px;">
+                    <form id="addProductForm" style="display: grid; gap: 15px; grid-template-columns: 1fr 1fr;">
+                        <input type="text" id="prodName" placeholder="Product Name" required style="padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: white;">
+                        <select id="prodType" required style="padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: white;">
+                            <option value="GPU">GPU</option>
+                            <option value="CPU">CPU</option>
+                            <option value="RAM">RAM</option>
+                            <option value="Motherboard">Motherboard</option>
+                            <option value="Storage">Storage</option>
+                            <option value="PSU">PSU</option>
+                            <option value="Cooler">Cooler</option>
+                            <option value="Case">Case</option>
+                        </select>
+                        <input type="number" id="prodPrice" placeholder="Price (TND)" required style="padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: white;">
+                        <input type="text" id="prodImg" placeholder="Image URL (e.g. images/gpu.png) or leave empty" style="padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: white;">
+                        <input type="text" id="prodDesc" placeholder="Description" required style="grid-column: span 2; padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: white;">
+                        <button type="submit" style="grid-column: span 2; padding: 12px; font-weight: bold; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s;"><i class="fas fa-plus"></i> Add Product to Shop</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <script src="admin.js"></script>
+</body>
+</html>
