@@ -1,0 +1,30 @@
+:root {
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --warning: #f59e0b;
+  --success: #10b981;
+  --bg-color: #111827;
+  --card-bg: rgba(31, 41, 55, 0.8);
+  --text-color: #f9fafb;
+  --text-muted: #9ca3af;
+  --input-bg: rgba(255, 255, 255, 0.03);
+  --border-color: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-color);
+  background-image: radial-gradient(circle at center top, rgba(59, 130, 246, 0.1) 0%, transparent 60%);
+  background-size: cover;
+  background-attachment: fixed;
+  color: var(--text-color);
+  min-height: 100vh;
+}

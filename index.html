@@ -1,12 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>YK Tech Shop React</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Login Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- LOGIN SECTION -->
+        <div id="loginSection">
+            <div class="header">
+                <h1>Welcome Back</h1>
+                <p>Please enter your details to sign in.</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user icon"></i>
+                        <input type="text" id="username" placeholder="Enter username" autocomplete="off" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock icon"></i>
+                        <input type="password" id="password" placeholder="Enter password" required>
+                        <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <span>Sign In</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <div id="statusMessage" class="message"></div>
+                
+                <p class="toggle-text">Don't have an account? <span id="showSignup">Sign up</span></p>
+            </form>
+        </div>
+
+        <!-- SIGN UP SECTION -->
+        <div id="signupSection" style="display: none;">
+            <div class="header">
+                <h1>Create Account</h1>
+                <p>Register to get started.</p>
+            </div>
+
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signupUsername">Username</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user icon"></i>
+                        <input type="text" id="signupUsername" placeholder="Choose a username" autocomplete="off" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock icon"></i>
+                        <input type="password" id="signupPassword" placeholder="Choose a password" required>
+                        <i class="fas fa-eye toggle-password" id="toggleSignupPassword"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="signupBtn">
+                    <span>Sign Up</span>
+                    <i class="fas fa-user-plus"></i>
+                </button>
+                <div id="signupStatusMessage" class="message"></div>
+
+                <p class="toggle-text">Already have an account? <span id="showLogin">Log in</span></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <script src="app.js"></script>
+</body>
 </html>
