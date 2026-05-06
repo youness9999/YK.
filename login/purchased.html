@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,4 +48,55 @@
 
     <script src="purch.js" ></script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+    <link rel='stylesheet' href="shop.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo"><i class="fas fa-microchip"></i> YK Tech Shop</div>
+            <div class="nav-right">
+                <span id="welcomeUser" class="nav-user"></span>
+                <button id="backBtn" class="btn-logout" style="background: var(--primary);" onclick="window.location.href='page.html'"><i class="fas fa-arrow-left"></i> Back to Shop</button>
+                <button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+    </nav>
+    <main class="shop-container">
+        <header class="shop-header" style="margin-bottom: 40px; text-align: left; display: flex; align-items: center; gap: 20px; background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--border-color);">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: white;" id="profileAvatar">
+                U
+            </div>
+            <div>
+                <h1 id="profileName" style="margin-bottom: 5px; font-size: 28px;">User Profile</h1>
+                <p style="color: var(--text-muted);">Manage your account and view your order history.</p>
+            </div>
+        </header>
+
+        <h2 style="margin-bottom: 20px; font-size: 22px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Order History</h2>
+
+        <header id="orderEmptyState" class="empty-state" style="display: none; text-align: center; padding: 40px;" >
+            <h2>You haven't made any purchases yet.</h2>
+            <p style="color: var(--text-muted); margin-top: 10px;">Head back to the shop to make your first purchase!</p>
+        </header>
+
+        <div class="products-grid" id="productsGrid">
+            <!-- Products injected by JS -->
+        </div>
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <script src="purch.js" ></script>
+</body>
+>>>>>>> 1863b97 (إضافة مجلد logic js فقط)
 </html>
