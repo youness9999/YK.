@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
 import './Shop.css';
@@ -17,9 +17,10 @@ export default function Shop() {
   const [sortOrder, setSortOrder] = useState('default');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Cart
+  // Cart & Wishlist
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [wishlist, setWishlist] = useState([]);
   
   // Toast
   const [toast, setToast] = useState({ message: '', type: '', visible: false });
@@ -48,11 +49,46 @@ export default function Shop() {
     if (savedCart) setCart(JSON.parse(savedCart));
 
     fetchProducts();
+    const user = localStorage.getItem('loggedInUser');
+    if (user) {
+      fetchWishlist(user);
+    }
   }, [navigate]);
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
+
+  const fetchWishlist = async (username) => {
+    try {
+      const q = query(collection(db, 'wishlists'), where('user', '==', username));
+      const snap = await getDocs(q);
+      setWishlist(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch(err) {
+      console.error("Failed to load wishlist", err);
+    }
+  };
+
+  const toggleWishlist = async (product) => {
+    const existing = wishlist.find(w => w.productId === product.firebaseId);
+    if (existing) {
+      try {
+        await deleteDoc(doc(db, 'wishlists', existing.id));
+        setWishlist(wishlist.filter(w => w.id !== existing.id));
+        showToast('Removed from wishlist');
+      } catch(e) { console.error(e); }
+    } else {
+      try {
+        const docRef = await addDoc(collection(db, 'wishlists'), {
+          user: loggedInUser,
+          productId: product.firebaseId,
+          product: product
+        });
+        setWishlist([...wishlist, { id: docRef.id, user: loggedInUser, productId: product.firebaseId, product }]);
+        showToast('Added to wishlist', 'success');
+      } catch(e) { console.error(e); }
+    }
+  };
 
   const addToCart = (product) => {
     setCart(prev => {
@@ -236,6 +272,20 @@ export default function Shop() {
               key={p.firebaseId || idx} 
               className="product-card"
             >
+              <button 
+                onClick={() => toggleWishlist(p)}
+                style={{ 
+                  position: 'absolute', top: '15px', right: '15px', 
+                  background: 'rgba(0,0,0,0.5)', border: 'none', 
+                  color: wishlist.some(w => w.productId === p.firebaseId) ? '#ef4444' : 'rgba(255,255,255,0.5)', 
+                  fontSize: '20px', cursor: 'pointer', zIndex: 10,
+                  width: '36px', height: '36px', borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: '0.3s'
+                }}
+              >
+                <i className="fas fa-heart"></i>
+              </button>
               {p.img ? (
                 <div className="product-image-container">
                   <img src={p.img} alt={p.name} className="product-image" />

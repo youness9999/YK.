@@ -16,8 +16,13 @@ export default function Admin() {
   const [newProduct, setNewProduct] = useState({ name: '', price: '', type: 'GPU', desc: '', inStock: true });
 
   useEffect(() => {
+    const loggedIn = localStorage.getItem('loggedInUser');
+    if (loggedIn !== 'admin') {
+      navigate('/shop');
+      return;
+    }
     fetchData();
-  }, []);
+  }, [navigate]);
 
   const fetchData = async () => {
     try {
