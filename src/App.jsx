@@ -1,4 +1,5 @@
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 // Pages
 import Login from './pages/Login';
@@ -7,6 +8,14 @@ import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 
 function App() {
+  useEffect(() => {
+    if (localStorage.getItem('theme') === 'light') {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+    }
+  }, []);
+
   return (
     <Router>
       <Routes>

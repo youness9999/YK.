@@ -171,3 +171,42 @@
   color: var(--primary-hover);
   text-decoration: underline;
 }
+
+/* Light Mode Overrides */
+body.light-mode .login-container {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .header h1 {
+  color: #0f172a;
+}
+
+body.light-mode .header p, 
+body.light-mode .form-group label {
+  color: #475569;
+}
+
+body.light-mode .form-group input {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .form-group input:focus {
+  background: #ffffff;
+}
+
+body.light-mode .input-wrapper i.icon,
+body.light-mode .toggle-password {
+  color: #64748b;
+}
+
+body.light-mode .toggle-password:hover {
+  color: #0f172a;
+}
+
+body.light-mode .toggle-text {
+  color: #64748b;
+}
