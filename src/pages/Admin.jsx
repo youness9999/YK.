@@ -174,7 +174,7 @@ export default function Admin() {
             
             <div className="add-product-form">
               <h3>Add New Product</h3>
-              <form onSubmit={handleAddProduct} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <form onSubmit={handleAddProduct} className="add-product-form-grid">
                 <input type="text" placeholder="Product Name" required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="admin-input" />
                 <input type="number" placeholder="Price (TND)" required value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} className="admin-input" />
                 <select value={newProduct.type} onChange={e => setNewProduct({...newProduct, type: e.target.value})} className="admin-input">
