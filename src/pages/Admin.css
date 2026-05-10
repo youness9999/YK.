@@ -150,8 +150,10 @@
 }
 
 .badge.pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+.badge.approved { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
 .badge.shipped { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
 .badge.delivered { background: rgba(52, 211, 153, 0.2); color: #34d399; }
+.badge.cancelled { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
 
 .add-product-form {
     background: #1e293b;

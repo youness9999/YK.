@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
@@ -61,6 +61,16 @@ export default function Admin() {
       } catch (err) {
         console.error(err);
       }
+    }
+  };
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
+      fetchData(); // Refresh the list
+    } catch (err) {
+      console.error("Error updating order status:", err);
+      alert('Failed to update order status.');
     }
   };
 
@@ -157,11 +167,24 @@ export default function Admin() {
                 <tbody>
                   {orders.map(o => (
                     <tr key={o.id}>
-                      <td>{o.id}</td>
+                      <td>{o.id.substring(0, 8)}</td>
                       <td>{o.customerName || o.user}</td>
                       <td>{o.date}</td>
                       <td>{(parseFloat(o.total) || parseFloat(o.price)).toFixed(2)}</td>
-                      <td><span className={`badge ${o.status?.toLowerCase() || 'pending'}`}>{o.status || 'Pending'}</span></td>
+                      <td>
+                        <select 
+                          value={o.status || 'Pending'} 
+                          onChange={(e) => updateOrderStatus(o.id, e.target.value)}
+                          className={`badge ${o.status?.toLowerCase() || 'pending'}`}
+                          style={{ cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)', outline: 'none', background: 'transparent' }}
+                        >
+                          <option value="Pending" style={{ color: 'black' }}>Pending</option>
+                          <option value="Approved" style={{ color: 'black' }}>Approved</option>
+                          <option value="Shipped" style={{ color: 'black' }}>Shipped</option>
+                          <option value="Delivered" style={{ color: 'black' }}>Delivered</option>
+                          <option value="Cancelled" style={{ color: 'black' }}>Cancelled</option>
+                        </select>
+                      </td>
                     </tr>
                   ))}
                   {orders.length === 0 && <tr><td colSpan="5" style={{ textAlign: 'center' }}>No orders found.</td></tr>}
