@@ -49,7 +49,6 @@ export default function Shop() {
     if (savedCart) setCart(JSON.parse(savedCart));
 
     fetchProducts();
-    const user = localStorage.getItem('loggedInUser');
     if (user) {
       fetchWishlist(user);
     }
