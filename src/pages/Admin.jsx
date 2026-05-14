@@ -65,12 +65,14 @@ export default function Admin() {
   };
 
   const updateOrderStatus = async (orderId, newStatus) => {
+    // Optimistically update the UI
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
     try {
       await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
-      fetchData(); // Refresh the list
     } catch (err) {
       console.error("Error updating order status:", err);
       alert('Failed to update order status.');
+      fetchData(); // Revert on failure
     }
   };
 
@@ -176,13 +178,13 @@ export default function Admin() {
                           value={o.status || 'Pending'} 
                           onChange={(e) => updateOrderStatus(o.id, e.target.value)}
                           className={`badge ${o.status?.toLowerCase() || 'pending'}`}
-                          style={{ cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)', outline: 'none', background: 'transparent' }}
+                          style={{ cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)', outline: 'none', paddingRight: '20px' }}
                         >
-                          <option value="Pending" style={{ color: 'black' }}>Pending</option>
-                          <option value="Approved" style={{ color: 'black' }}>Approved</option>
-                          <option value="Shipped" style={{ color: 'black' }}>Shipped</option>
-                          <option value="Delivered" style={{ color: 'black' }}>Delivered</option>
-                          <option value="Cancelled" style={{ color: 'black' }}>Cancelled</option>
+                          <option value="Pending" style={{ color: 'black', background: 'white' }}>Pending</option>
+                          <option value="Approved" style={{ color: 'black', background: 'white' }}>Approved</option>
+                          <option value="Shipped" style={{ color: 'black', background: 'white' }}>Shipped</option>
+                          <option value="Delivered" style={{ color: 'black', background: 'white' }}>Delivered</option>
+                          <option value="Cancelled" style={{ color: 'black', background: 'white' }}>Cancelled</option>
                         </select>
                       </td>
                     </tr>
