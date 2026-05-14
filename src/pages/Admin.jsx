@@ -29,8 +29,8 @@ export default function Admin() {
       const ordersSnap = await getDocs(collection(db, 'orders'));
       const prodsSnap = await getDocs(collection(db, 'products'));
       
-      setOrders(ordersSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setProducts(prodsSnap.docs.map(d => ({ firebaseId: d.id, ...d.data() })));
+      setOrders(ordersSnap.docs.map(d => ({ ...d.data(), firebaseId: d.id })));
+      setProducts(prodsSnap.docs.map(d => ({ ...d.data(), firebaseId: d.id })));
     } catch (err) {
       console.error("Error fetching data: ", err);
     }
@@ -64,11 +64,11 @@ export default function Admin() {
     }
   };
 
-  const updateOrderStatus = async (orderId, newStatus) => {
+  const updateOrderStatus = async (firebaseId, newStatus) => {
     // Optimistically update the UI
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    setOrders(prev => prev.map(o => o.firebaseId === firebaseId ? { ...o, status: newStatus } : o));
     try {
-      await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
+      await updateDoc(doc(db, 'orders', firebaseId), { status: newStatus });
     } catch (err) {
       console.error("Error updating order status:", err);
       alert('Failed to update order status.');
@@ -168,15 +168,15 @@ export default function Admin() {
                 </thead>
                 <tbody>
                   {orders.map(o => (
-                    <tr key={o.id}>
-                      <td>{o.id.substring(0, 8)}</td>
+                    <tr key={o.firebaseId}>
+                      <td>{o.id}</td>
                       <td>{o.customerName || o.user}</td>
                       <td>{o.date}</td>
                       <td>{(parseFloat(o.total) || parseFloat(o.price)).toFixed(2)}</td>
                       <td>
                         <select 
                           value={o.status || 'Pending'} 
-                          onChange={(e) => updateOrderStatus(o.id, e.target.value)}
+                          onChange={(e) => updateOrderStatus(o.firebaseId, e.target.value)}
                           className={`badge ${o.status?.toLowerCase() || 'pending'}`}
                           style={{ cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)', outline: 'none', paddingRight: '20px' }}
                         >
