@@ -436,3 +436,55 @@ body.light-mode .nav-user {
     font-weight: bold;
     margin-bottom: 15px;
 }
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    .nav-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .nav-right {
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .shop-header h1 {
+        font-size: 28px;
+    }
+
+    .filters-container {
+        padding: 0 10px;
+    }
+
+    .price-filter-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .price-select {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+        margin: 10px;
+    }
+
+    .form-group {
+        grid-template-columns: 1fr !important;
+    }
+
+    .btn-buy, .btn-purchases, .btn-logout {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+}

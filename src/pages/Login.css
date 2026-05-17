@@ -210,3 +210,11 @@ body.light-mode .toggle-password:hover {
 body.light-mode .toggle-text {
   color: #64748b;
 }
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+  .login-container {
+    width: 90%;
+    padding: 30px 20px;
+  }
+}
