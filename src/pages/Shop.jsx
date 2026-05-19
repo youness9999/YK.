@@ -32,6 +32,37 @@ export default function Shop() {
   // Checkout Form
   const [formData, setFormData] = useState({ name: '', phone: '', address: '', quantity: 1, payment: 'Credit Card' });
 
+  // Chatbot State
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([{ sender: 'bot', text: 'Hi! How can I help you today?' }]);
+  const [chatInput, setChatInput] = useState('');
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    
+    const newMessages = [...chatMessages, { sender: 'user', text: chatInput }];
+    setChatMessages(newMessages);
+    
+    const inputLower = chatInput.toLowerCase();
+    let botReply = "I'm a simple bot. Ask me about shipping, tracking, or our products!";
+    
+    if (inputLower.includes('shipping') || inputLower.includes('delivery')) {
+      botReply = "We offer nationwide delivery within 48 hours for 7 TND, or FREE on orders over 500 TND!";
+    } else if (inputLower.includes('track') || inputLower.includes('order')) {
+      botReply = "You can view the status of your orders anytime by clicking the 'Profile' button at the top!";
+    } else if (inputLower.includes('ram') || inputLower.includes('ddr5')) {
+      botReply = "Yes, we stock the latest high-speed RAM including DDR5. Check the 'RAM' filter above!";
+    } else if (inputLower.includes('gpu') || inputLower.includes('graphics')) {
+      botReply = "We have high-end graphics cards from Nvidia and AMD. Check the 'GPU' category.";
+    }
+
+    setChatInput('');
+    setTimeout(() => {
+      setChatMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
+    }, 600);
+  };
+
   useEffect(() => {
     const user = localStorage.getItem('loggedInUser');
     if (!user) {
@@ -463,6 +494,48 @@ export default function Shop() {
       {/* Toast */}
       <div className={`toast ${toast.type} ${toast.visible ? 'show' : ''}`}>
         {toast.message}
+      </div>
+
+      {/* Floating Chatbot */}
+      <div className="chatbot-container">
+        <AnimatePresence>
+          {isChatOpen && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20, scale: 0.9 }} 
+              animate={{ opacity: 1, y: 0, scale: 1 }} 
+              exit={{ opacity: 0, y: 20, scale: 0.9 }} 
+              className="chatbot-window"
+            >
+              <div className="chatbot-header">
+                <h3><i className="fas fa-robot"></i> YK Assistant</h3>
+                <button onClick={() => setIsChatOpen(false)} className="action-btn" style={{ color: 'white' }}><i className="fas fa-times"></i></button>
+              </div>
+              <div className="chatbot-messages">
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={`chat-bubble ${msg.sender}`}>
+                    {msg.text}
+                  </div>
+                ))}
+              </div>
+              <form onSubmit={handleSendMessage} className="chatbot-input-area">
+                <input 
+                  type="text" 
+                  placeholder="Ask a question..." 
+                  value={chatInput} 
+                  onChange={(e) => setChatInput(e.target.value)} 
+                />
+                <button type="submit"><i className="fas fa-paper-plane"></i></button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <button 
+          className="chatbot-toggle-btn" 
+          onClick={() => setIsChatOpen(!isChatOpen)}
+        >
+          <i className={`fas ${isChatOpen ? 'fa-times' : 'fa-comments'}`}></i>
+        </button>
       </div>
     </>
   );

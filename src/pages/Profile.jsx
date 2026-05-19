@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import './Profile.css';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +12,8 @@ export default function Profile() {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'wishlist'
+  const [avatar, setAvatar] = useState(null);
+  const [userDocId, setUserDocId] = useState(null);
 
   useEffect(() => {
     const loggedIn = localStorage.getItem('loggedInUser');
@@ -26,6 +28,14 @@ export default function Profile() {
   const fetchData = async (username) => {
     setLoading(true);
     try {
+      // Fetch User Doc for Avatar
+      const qUser = query(collection(db, 'users'), where('username', '==', username));
+      const snapUser = await getDocs(qUser);
+      if (!snapUser.empty) {
+        setUserDocId(snapUser.docs[0].id);
+        setAvatar(snapUser.docs[0].data().avatar || null);
+      }
+
       // Fetch Orders
       const qOrders = query(collection(db, 'orders'), where('user', '==', username));
       const snapOrders = await getDocs(qOrders);
@@ -58,6 +68,30 @@ export default function Profile() {
     navigate('/');
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 1048576) {
+        alert("Image is too large! Please select an image under 1MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = reader.result;
+        setAvatar(base64String); // Optimistic UI update
+        if (userDocId) {
+          try {
+            await updateDoc(doc(db, 'users', userDocId), { avatar: base64String });
+          } catch(err) {
+            console.error("Failed to upload avatar:", err);
+            alert("Failed to save avatar to database.");
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="profile-container">
       <nav className="profile-nav">
@@ -80,8 +114,24 @@ export default function Profile() {
           animate={{ opacity: 1, y: 0 }} 
           className="profile-header-card"
         >
-          <div className="avatar-circle">
-            <i className="fas fa-user"></i>
+          <div className="avatar-wrapper" style={{ position: 'relative' }}>
+            <label htmlFor="avatar-upload" className="avatar-circle" style={{ cursor: 'pointer', overflow: 'hidden', padding: avatar ? '0' : undefined }}>
+              {avatar ? (
+                <img src={avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <i className="fas fa-user"></i>
+              )}
+            </label>
+            <input 
+              type="file" 
+              id="avatar-upload" 
+              accept="image/*" 
+              style={{ display: 'none' }} 
+              onChange={handleImageUpload} 
+            />
+            <div className="upload-badge" style={{ position: 'absolute', bottom: 0, right: 0, background: 'var(--primary)', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', pointerEvents: 'none', border: '2px solid var(--card-bg)' }}>
+              <i className="fas fa-camera" style={{ fontSize: '12px' }}></i>
+            </div>
           </div>
           <div className="profile-info">
             <h2>{user}</h2>
