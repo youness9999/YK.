@@ -21,5 +21,8 @@
     "react-router-dom": "^7.15.0",
     "recharts": "^3.8.1",
     "vite": "^8.0.10"
+  },
+  "devDependencies": {
+    "firebase-tools": "^15.22.4"
   }
 }
